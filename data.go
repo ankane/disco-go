@@ -129,7 +129,7 @@ func convertToUtf8(str string) string {
 		if v < 128 {
 			buf = append(buf, v)
 		} else {
-			buf = append(buf, 195, v - 64)
+			buf = append(buf, 195, v-64)
 		}
 	}
 	return string(buf)
