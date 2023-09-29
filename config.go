@@ -7,6 +7,7 @@ type config struct {
 	iterations     int
 	regularization *float32
 	learningRate   float32
+	alpha          float32
 	callback       func(info FitInfo)
 	seed           int64
 }
@@ -32,6 +33,12 @@ func Regularization(regularization float32) Option {
 func LearningRate(learningRate float32) Option {
 	return func(c *config) {
 		c.learningRate = learningRate
+	}
+}
+
+func Alpha(alpha float32) Option {
+	return func(c *config) {
+		c.alpha = alpha
 	}
 }
 

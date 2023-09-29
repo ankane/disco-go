@@ -57,6 +57,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		factors:      8,
 		iterations:   20,
 		learningRate: 0.1,
+		alpha:        40.0,
 		seed:         rand.Int63(),
 	}
 	for _, opt := range options {
@@ -106,8 +107,9 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 				ciu = append(ciu, []sparseRow{})
 			}
 
-			cui[u] = append(cui[u], sparseRow{index: i, confidence: rating.value})
-			ciu[i] = append(ciu[i], sparseRow{index: u, confidence: rating.value})
+			confidence := 1.0 + alpha*rating.value
+			cui[u] = append(cui[u], sparseRow{index: i, confidence: confidence})
+			ciu[i] = append(ciu[i], sparseRow{index: u, confidence: confidence})
 		} else {
 			rowInds = append(rowInds, u)
 			colInds = append(colInds, i)
