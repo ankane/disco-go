@@ -17,8 +17,8 @@ func (m *matrix) Row(row int) []float32 {
 }
 
 func (m *matrix) Dot(x []float32) []float32 {
-	res := make([]float32, len(x))
-	for i := 0; i < len(x); i++ {
+	res := make([]float32, m.rows)
+	for i := 0; i < m.rows; i++ {
 		var sum float32 = 0.0
 		row := m.Row(i)
 		for j := 0; j < m.cols; j++ {
