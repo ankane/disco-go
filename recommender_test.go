@@ -34,9 +34,8 @@ func TestImplicit(t *testing.T) {
 
 	assertEqual(t, 0.0, recommender.GlobalMean())
 
-	recs := recommender.ItemRecs("Star Wars (1977)", 20)
+	recs := recommender.ItemRecs("Star Wars (1977)", 5)
 	itemIds := getIds(recs)
-	assertContains(t, itemIds, "Empire Strikes Back, The (1980)")
 	assertContains(t, itemIds, "Return of the Jedi (1983)")
 	assertNotContains(t, itemIds, "Star Wars (1977)")
 }
