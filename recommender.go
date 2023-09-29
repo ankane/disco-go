@@ -107,7 +107,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 				ciu = append(ciu, []sparseRow{})
 			}
 
-			confidence := 1.0 + alpha*rating.value
+			confidence := 1.0 + config.alpha*rating.value
 			cui[u] = append(cui[u], sparseRow{index: i, confidence: confidence})
 			ciu[i] = append(ciu[i], sparseRow{index: u, confidence: confidence})
 		} else {
