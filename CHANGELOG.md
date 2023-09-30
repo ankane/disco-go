@@ -1,4 +1,4 @@
-## 0.1.1 (unreleased)
+## 0.1.1 (2023-09-30)
 
 - Fixed factorization for implicit feedback
 
