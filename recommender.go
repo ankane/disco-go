@@ -497,7 +497,7 @@ func scaledAdd(x []float32, a float32, v []float32) {
 
 func neg(x []float32) {
 	for i := 0; i < len(x); i++ {
-		x[i] *= -1
+		x[i] = -x[i]
 	}
 }
 
