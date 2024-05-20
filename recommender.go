@@ -288,9 +288,6 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		}
 	}
 
-	recommender.userNorms = recommender.userFactors.Norms()
-	recommender.itemNorms = recommender.itemFactors.Norms()
-
 	return recommender, nil
 }
 
@@ -322,10 +319,16 @@ func (r *Recommender[T, U]) UserRecs(userId T, count int) []Rec[U] {
 }
 
 func (r *Recommender[T, U]) ItemRecs(itemId U, count int) []Rec[U] {
+	if r.itemNorms == nil {
+		r.itemNorms = r.itemFactors.Norms()
+	}
 	return similar(r.itemMap, r.itemIds, r.itemFactors, r.itemNorms, itemId, count)
 }
 
 func (r *Recommender[T, U]) SimilarUsers(userId T, count int) []Rec[T] {
+	if r.userNorms == nil {
+		r.userNorms = r.userFactors.Norms()
+	}
 	return similar(r.userMap, r.userIds, r.userFactors, r.userNorms, userId, count)
 }
 
