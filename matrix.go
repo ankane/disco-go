@@ -29,23 +29,17 @@ func (m *matrix) Dot(x []float32) []float32 {
 	return res
 }
 
-func (m *matrix) Normalize() *matrix {
-	data := make([]float32, m.rows*m.cols)
-	copy(data, m.data)
-	res := &matrix{rows: m.rows, cols: m.cols, data: data}
+func (m *matrix) Norms() []float32 {
+	res := make([]float32, 0, m.rows)
 
 	for i := 0; i < m.rows; i++ {
-		row := res.Row(i)
+		row := m.Row(i)
 		var norm float32 = 0.0
 		for j := 0; j < len(row); j++ {
 			norm += row[j] * row[j]
 		}
 		norm = sqrt(norm)
-		if norm > 0 {
-			for j := 0; j < len(row); j++ {
-				row[j] /= norm
-			}
-		}
+		res = append(res, norm)
 	}
 
 	return res

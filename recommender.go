@@ -12,16 +12,16 @@ type Id interface {
 }
 
 type Recommender[T Id, U Id] struct {
-	userMap               map[T]int
-	itemMap               map[U]int
-	userIds               []T
-	itemIds               []U
-	rated                 map[int]map[int]bool
-	globalMean            float32
-	userFactors           *matrix
-	itemFactors           *matrix
-	normalizedUserFactors *matrix
-	normalizedItemFactors *matrix
+	userMap     map[T]int
+	itemMap     map[U]int
+	userIds     []T
+	itemIds     []U
+	rated       map[int]map[int]bool
+	globalMean  float32
+	userFactors *matrix
+	itemFactors *matrix
+	userNorms   []float32
+	itemNorms   []float32
 }
 
 type Rec[T Id] struct {
@@ -288,6 +288,9 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		}
 	}
 
+	recommender.userNorms = recommender.userFactors.Norms()
+	recommender.itemNorms = recommender.itemFactors.Norms()
+
 	return recommender, nil
 }
 
@@ -319,17 +322,11 @@ func (r *Recommender[T, U]) UserRecs(userId T, count int) []Rec[U] {
 }
 
 func (r *Recommender[T, U]) ItemRecs(itemId U, count int) []Rec[U] {
-	if r.normalizedItemFactors == nil {
-		r.normalizedItemFactors = r.itemFactors.Normalize()
-	}
-	return similar(r.itemMap, r.itemIds, r.normalizedItemFactors, itemId, count)
+	return similar(r.itemMap, r.itemIds, r.itemFactors, r.itemNorms, itemId, count)
 }
 
 func (r *Recommender[T, U]) SimilarUsers(userId T, count int) []Rec[T] {
-	if r.normalizedUserFactors == nil {
-		r.normalizedUserFactors = r.userFactors.Normalize()
-	}
-	return similar(r.userMap, r.userIds, r.normalizedUserFactors, userId, count)
+	return similar(r.userMap, r.userIds, r.userFactors, r.userNorms, userId, count)
 }
 
 func (r *Recommender[T, U]) Predict(userId T, itemId U) float32 {
@@ -455,17 +452,22 @@ func createFactors(rows int, cols int, rng *rand.Rand, endRange float32) *matrix
 	return m
 }
 
-func similar[T Id](idMap map[T]int, ids []T, normFactors *matrix, id T, count int) []Rec[T] {
+func similar[T Id](idMap map[T]int, ids []T, factors *matrix, norms []float32, id T, count int) []Rec[T] {
 	i, ok := idMap[id]
 	if !ok {
 		return []Rec[T]{}
 	}
 
-	factors := normFactors.Row(i)
+	rowFactors := factors.Row(i)
+	rowNorm := norms[i]
 
 	predictions := []Rec[int]{}
-	for j := 0; j < normFactors.rows; j++ {
-		predictions = append(predictions, Rec[int]{Id: j, Score: dot(factors, normFactors.Row(j))})
+	for j := 0; j < factors.rows; j++ {
+		denom := rowNorm * norms[j]
+		if denom == 0 {
+			denom = 0.00001
+		}
+		predictions = append(predictions, Rec[int]{Id: j, Score: dot(rowFactors, factors.Row(j)) / denom})
 	}
 	sort.Slice(predictions, func(j, k int) bool {
 		return predictions[j].Score > predictions[k].Score
