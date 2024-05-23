@@ -6,7 +6,7 @@
 - Works with explicit and implicit feedback
 - Uses high-performance matrix factorization
 
-[![Build Status](https://github.com/ankane/disco-go/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/ankane/disco-go/actions)
+[![Build Status](https://github.com/ankane/disco-go/actions/workflows/build.yml/badge.svg)](https://github.com/ankane/disco-go/actions)
 
 ## Installation
 
