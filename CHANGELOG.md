@@ -1,4 +1,4 @@
-## 0.1.2 (unreleased)
+## 0.1.2 (2024-06-02)
 
 - Reduced memory for `ItemRecs` and `SimilarUsers`
 
