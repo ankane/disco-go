@@ -88,7 +88,10 @@ func downloadFile(filename string, url string, fileHash string) (string, error) 
 
 	_, err = os.Stat(filepath.Dir(dest))
 	if err != nil {
-		os.MkdirAll(filepath.Dir(dest), 0755)
+		err = os.MkdirAll(filepath.Dir(dest), 0755)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	fmt.Printf("Downloading data from %s\n", url)
@@ -98,6 +101,9 @@ func downloadFile(filename string, url string, fileHash string) (string, error) 
 	}
 	defer resp.Body.Close()
 	contents, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
 
 	b := sha256.Sum256(contents)
 	checksum := hex.EncodeToString(b[:])
