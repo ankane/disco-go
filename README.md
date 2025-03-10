@@ -94,7 +94,7 @@ recommender, err := disco.FitExplicit(data, disco.Factors(20))
 Get similar movies
 
 ```go
-recommender.ItemRecs("Star Wars (1977)")
+recommender.ItemRecs("Star Wars (1977)", 5)
 ```
 
 ## Storing Recommendations
