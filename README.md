@@ -101,7 +101,7 @@ recommender.ItemRecs("Star Wars (1977)", 5)
 
 Save recommendations to your database.
 
-Alternatively, you can store only the factors and use a library like [pgvector-go](https://github.com/pgvector/pgvector-go). See an [example](https://github.com/pgvector/pgvector-go/blob/master/examples/disco_test.go).
+Alternatively, you can store only the factors and use a library like [pgvector-go](https://github.com/pgvector/pgvector-go). See an [example](https://github.com/pgvector/pgvector-go/blob/master/examples/disco/main.go).
 
 ## Algorithms
 
