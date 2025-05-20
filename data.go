@@ -18,7 +18,6 @@ import (
 // Loads the MovieLens 100K dataset.
 func LoadMovieLens() (*Dataset[int, string], error) {
 	data := NewDataset[int, string]()
-	data.Grow(100000)
 
 	itemPath, err := downloadFile(
 		"ml-100k/u.item",
@@ -56,6 +55,7 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 		return data, err
 	}
 
+	data.Grow(100000)
 	scanner = bufio.NewScanner(file)
 	for scanner.Scan() {
 		row := strings.Split(scanner.Text(), "\t")
