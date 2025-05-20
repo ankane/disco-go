@@ -3,7 +3,7 @@ package disco
 import (
 	"errors"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"slices"
 	"sort"
 )
@@ -68,7 +68,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		iterations:   20,
 		learningRate: 0.1,
 		alpha:        40.0,
-		seed:         rand.Int63(),
+		seed:         rand.Int64(),
 	}
 	for _, opt := range options {
 		opt(config)
@@ -156,7 +156,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		endRange = 0.1
 	}
 
-	rng := rand.New(rand.NewSource(config.seed))
+	rng := rand.New(rand.NewPCG(uint64(config.seed), 0))
 
 	userFactors := createFactors(users, factors, rng, endRange)
 	itemFactors := createFactors(items, factors, rng, endRange)
