@@ -128,7 +128,7 @@ func downloadFile(filename string, url string, fileHash string) (string, error) 
 }
 
 func convertToUtf8(str string) string {
-	buf := make([]byte, 0)
+	buf := make([]byte, 0, len(str))
 	// iterate over bytes
 	for i := 0; i < len(str); i++ {
 		v := str[i]
