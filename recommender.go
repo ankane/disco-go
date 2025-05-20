@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/rand"
+	"slices"
 	"sort"
 )
 
@@ -89,6 +90,12 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 
 	if trainSet.Len() == 0 {
 		return nil, errors.New("No training data")
+	}
+
+	if !implicit {
+		rowInds = slices.Grow(rowInds, trainSet.Len())
+		colInds = slices.Grow(colInds, trainSet.Len())
+		values = slices.Grow(values, trainSet.Len())
 	}
 
 	for _, rating := range trainSet.data {
