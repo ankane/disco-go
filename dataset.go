@@ -40,9 +40,10 @@ func (d *Dataset[T, U]) Len() int {
 func (d *Dataset[T, U]) SplitRandom(p float32) (*Dataset[T, U], *Dataset[T, U]) {
 	index := int(p * float32(len(d.data)))
 	data := make([]rating[T, U], len(d.data))
-	for i, v := range rand.Perm(len(d.data)) {
-		data[v] = d.data[i]
-	}
+	copy(data, d.data)
+	rand.Shuffle(len(data), func(i, j int) {
+		data[i], data[j] = data[j], data[i]
+	})
 	trainSet := &Dataset[T, U]{data: data[:index]}
 	validSet := &Dataset[T, U]{data: data[index:]}
 	return trainSet, validSet
