@@ -22,8 +22,8 @@ func NewDataset[T Id, U Id]() *Dataset[T, U] {
 }
 
 // Grows the capacity of the dataset.
-func (d *Dataset[T, U]) Grow(n int) {
-	d.data = slices.Grow(d.data, n)
+func (d *Dataset[T, U]) Grow(capacity int) {
+	d.data = slices.Grow(d.data, capacity)
 }
 
 // Adds a rating to the dataset.
