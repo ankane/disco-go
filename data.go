@@ -38,7 +38,7 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 		return data, err
 	}
 
-	movies := make(map[string]string, 0)
+	movies := make(map[string]string, 1682)
 
 	file, err := os.Open(itemPath)
 	if err != nil {
