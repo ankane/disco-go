@@ -309,7 +309,7 @@ func (r *Recommender[T, U]) UserRecs(userId T, count int) []Rec[U] {
 
 	rated := r.rated[u]
 	factors := r.userFactors.Row(u)
-	predictions := []Rec[int]{}
+	predictions := make([]Rec[int], 0, r.itemFactors.rows)
 	for j := 0; j < r.itemFactors.rows; j++ {
 		predictions = append(predictions, Rec[int]{Id: j, Score: dot(factors, r.itemFactors.Row(j))})
 	}
@@ -318,7 +318,7 @@ func (r *Recommender[T, U]) UserRecs(userId T, count int) []Rec[U] {
 	})
 	predictions = first(predictions, count+len(rated))
 
-	recs := []Rec[U]{}
+	recs := make([]Rec[U], 0, count+len(rated))
 	for _, prediction := range predictions {
 		_, ok := rated[prediction.Id]
 		if !ok {
@@ -483,7 +483,7 @@ func similar[T Id](idMap map[T]int, ids []T, factors *matrix, norms []float32, i
 	rowFactors := factors.Row(i)
 	rowNorm := norms[i]
 
-	predictions := []Rec[int]{}
+	predictions := make([]Rec[int], 0, factors.rows)
 	for j := 0; j < factors.rows; j++ {
 		denom := rowNorm * norms[j]
 		if denom == 0 {
@@ -496,7 +496,7 @@ func similar[T Id](idMap map[T]int, ids []T, factors *matrix, norms []float32, i
 	})
 	predictions = first(predictions, count+1)
 
-	recs := []Rec[T]{}
+	recs := make([]Rec[T], 0, count+1)
 	for _, prediction := range predictions {
 		if prediction.Id != i {
 			recs = append(recs, Rec[T]{Id: ids[prediction.Id], Score: prediction.Score})
