@@ -11,6 +11,7 @@ type Id interface {
 	string | int | uint | int8 | int16 | int32 | int64 | uint8 | uint16 | uint32 | uint64
 }
 
+// A recommender.
 type Recommender[T Id, U Id] struct {
 	userMap     map[T]int
 	itemMap     map[U]int
@@ -24,14 +25,19 @@ type Recommender[T Id, U Id] struct {
 	itemNorms   []float32
 }
 
+// A recommendation.
 type Rec[T Id] struct {
 	Id    T
 	Score float32
 }
 
+// Information about a training iteration.
 type FitInfo struct {
+	// The iteration.
 	Iteration int
+	// The training loss.
 	TrainLoss float32
+	// The validation loss.
 	ValidLoss float32
 }
 
@@ -40,14 +46,17 @@ type sparseRow struct {
 	confidence float32
 }
 
+// Creates a recommender with explicit feedback.
 func FitExplicit[T Id, U Id](trainSet *Dataset[T, U], options ...Option) (*Recommender[T, U], error) {
 	return fit(trainSet, nil, false, options...)
 }
 
+// Creates a recommender with implicit feedback.
 func FitImplicit[T Id, U Id](trainSet *Dataset[T, U], options ...Option) (*Recommender[T, U], error) {
 	return fit(trainSet, nil, true, options...)
 }
 
+// Creates a recommender with explicit feedback and performs cross-validation.
 func FitEvalExplicit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], options ...Option) (*Recommender[T, U], error) {
 	return fit(trainSet, validSet, false, options...)
 }
@@ -291,6 +300,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	return recommender, nil
 }
 
+// Returns recommendations for a user.
 func (r *Recommender[T, U]) UserRecs(userId T, count int) []Rec[U] {
 	u, ok := r.userMap[userId]
 	if !ok {
@@ -318,6 +328,7 @@ func (r *Recommender[T, U]) UserRecs(userId T, count int) []Rec[U] {
 	return first(recs, count)
 }
 
+// Returns recommendations for an item.
 func (r *Recommender[T, U]) ItemRecs(itemId U, count int) []Rec[U] {
 	if r.itemNorms == nil {
 		r.itemNorms = r.itemFactors.Norms()
@@ -325,6 +336,7 @@ func (r *Recommender[T, U]) ItemRecs(itemId U, count int) []Rec[U] {
 	return similar(r.itemMap, r.itemIds, r.itemFactors, r.itemNorms, itemId, count)
 }
 
+// Returns similar users.
 func (r *Recommender[T, U]) SimilarUsers(userId T, count int) []Rec[T] {
 	if r.userNorms == nil {
 		r.userNorms = r.userFactors.Norms()
@@ -332,6 +344,7 @@ func (r *Recommender[T, U]) SimilarUsers(userId T, count int) []Rec[T] {
 	return similar(r.userMap, r.userIds, r.userFactors, r.userNorms, userId, count)
 }
 
+// Returns the predicted rating for a specific user and item.
 func (r *Recommender[T, U]) Predict(userId T, itemId U) float32 {
 	u, ok := r.userMap[userId]
 	if !ok {
@@ -346,14 +359,17 @@ func (r *Recommender[T, U]) Predict(userId T, itemId U) float32 {
 	return dot(r.userFactors.Row(u), r.itemFactors.Row(i))
 }
 
+// Returns user ids.
 func (r *Recommender[T, U]) UserIds() []T {
 	return r.userIds
 }
 
+// Returns item ids.
 func (r *Recommender[T, U]) ItemIds() []U {
 	return r.itemIds
 }
 
+// Returns factors for a specific user.
 func (r *Recommender[T, U]) UserFactors(userId T) []float32 {
 	u, ok := r.userMap[userId]
 	if !ok {
@@ -362,6 +378,7 @@ func (r *Recommender[T, U]) UserFactors(userId T) []float32 {
 	return r.userFactors.Row(u)
 }
 
+// Returns factors for a specific item.
 func (r *Recommender[T, U]) ItemFactors(itemId U) []float32 {
 	i, ok := r.itemMap[itemId]
 	if !ok {
@@ -370,10 +387,12 @@ func (r *Recommender[T, U]) ItemFactors(itemId U) []float32 {
 	return r.itemFactors.Row(i)
 }
 
+// Returns the global mean.
 func (r *Recommender[T, U]) GlobalMean() float32 {
 	return r.globalMean
 }
 
+// Calculates the root mean square error for a dataset.
 func (r *Recommender[T, U]) Rmse(data *Dataset[T, U]) float32 {
 	var sum float32 = 0.0
 	for _, v := range data.data {

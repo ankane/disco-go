@@ -15,6 +15,7 @@ import (
 	"strings"
 )
 
+// Loads the MovieLens 100K dataset.
 func LoadMovieLens() (*Dataset[int, string], error) {
 	data := NewDataset[int, string]()
 	data.Grow(100000)
