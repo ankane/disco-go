@@ -17,6 +17,7 @@ import (
 
 func LoadMovieLens() (*Dataset[int, string], error) {
 	data := NewDataset[int, string]()
+	data.Grow(100000)
 
 	itemPath, err := downloadFile(
 		"ml-100k/u.item",

@@ -2,6 +2,7 @@ package disco
 
 import (
 	"math/rand"
+	"slices"
 )
 
 type Dataset[T Id, U Id] struct {
@@ -24,6 +25,10 @@ func (d *Dataset[T, U]) Push(userId T, itemId U, value float32) {
 
 func (d *Dataset[T, U]) Len() int {
 	return len(d.data)
+}
+
+func (d *Dataset[T, U]) Grow(n int) {
+	d.data = slices.Grow(d.data, n)
 }
 
 func (d *Dataset[T, U]) SplitRandom(p float32) (*Dataset[T, U], *Dataset[T, U]) {

@@ -1,5 +1,6 @@
 ## 0.2.0 (unreleased)
 
+- Added `Grow` method to `Dataset`
 - Dropped support for Go < 1.23
 
 ## 0.1.2 (2024-06-02)
