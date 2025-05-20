@@ -21,6 +21,11 @@ func NewDataset[T Id, U Id]() *Dataset[T, U] {
 	return &Dataset[T, U]{data: []rating[T, U]{}}
 }
 
+// Grows the capacity of the dataset.
+func (d *Dataset[T, U]) Grow(n int) {
+	d.data = slices.Grow(d.data, n)
+}
+
 // Adds a rating to the dataset.
 func (d *Dataset[T, U]) Push(userId T, itemId U, value float32) {
 	d.data = append(d.data, rating[T, U]{userId: userId, itemId: itemId, value: value})
@@ -29,11 +34,6 @@ func (d *Dataset[T, U]) Push(userId T, itemId U, value float32) {
 // Returns the number of ratings in the dataset.
 func (d *Dataset[T, U]) Len() int {
 	return len(d.data)
-}
-
-// Grows the capacity of the dataset.
-func (d *Dataset[T, U]) Grow(n int) {
-	d.data = slices.Grow(d.data, n)
 }
 
 // Splits the dataset into training and validation sets.
