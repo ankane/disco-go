@@ -228,7 +228,13 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		for iteration := 0; iteration < config.iterations; iteration++ {
 			var trainLoss float32 = 0.0
 
-			for _, j := range rand.Perm(trainSet.Len()) {
+			rand.Shuffle(trainSet.Len(), func(i, j int) {
+				rowInds[i], rowInds[j] = rowInds[j], rowInds[i]
+				colInds[i], colInds[j] = colInds[j], colInds[i]
+				values[i], values[j] = values[j], values[i]
+			})
+
+			for j := range trainSet.Len() {
 				u := rowInds[j]
 				v := colInds[j]
 
