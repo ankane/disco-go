@@ -46,8 +46,9 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		row := strings.Split(scanner.Text(), "|")
-		movies[row[0]] = convertToUtf8(row[1])
+		row0, rest, _ := strings.Cut(scanner.Text(), "|")
+		row1, rest, _ := strings.Cut(rest, "|")
+		movies[row0] = convertToUtf8(row1)
 	}
 
 	file, err = os.Open(dataPath)
@@ -58,19 +59,21 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 	data.Grow(100000)
 	scanner = bufio.NewScanner(file)
 	for scanner.Scan() {
-		row := strings.Split(scanner.Text(), "\t")
+		row0, rest, _ := strings.Cut(scanner.Text(), "\t")
+		row1, rest, _ := strings.Cut(rest, "\t")
+		row2, rest, _ := strings.Cut(rest, "\t")
 
-		userId, err := strconv.Atoi(row[0])
+		userId, err := strconv.Atoi(row0)
 		if err != nil {
 			return data, err
 		}
 
-		value, err := strconv.ParseFloat(row[2], 64)
+		value, err := strconv.ParseFloat(row2, 64)
 		if err != nil {
 			return data, err
 		}
 
-		data.Push(userId, movies[row[1]], float32(value))
+		data.Push(userId, movies[row1], float32(value))
 	}
 
 	return data, nil
