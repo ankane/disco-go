@@ -1,3 +1,7 @@
+## 0.2.0 (unreleased)
+
+- Dropped support for Go < 1.23
+
 ## 0.1.2 (2024-06-02)
 
 - Reduced memory for `ItemRecs` and `SimilarUsers`
