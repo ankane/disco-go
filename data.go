@@ -37,12 +37,12 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 		return data, err
 	}
 
-	movies := make(map[string]string, 1682)
-
 	file, err := os.Open(itemPath)
 	if err != nil {
 		return data, err
 	}
+
+	movies := make(map[string]string, 1682)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -57,6 +57,7 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 	}
 
 	data.Grow(100000)
+
 	scanner = bufio.NewScanner(file)
 	for scanner.Scan() {
 		row0, rest, _ := strings.Cut(scanner.Text(), "\t")
