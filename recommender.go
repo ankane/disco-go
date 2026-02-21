@@ -48,6 +48,12 @@ type sparseRow struct {
 	confidence float32
 }
 
+type ratingRow struct {
+	u int
+	i int
+	r float32
+}
+
 // Creates a recommender with explicit feedback.
 func FitExplicit[T Id, U Id](trainSet *Dataset[T, U], options ...Option) (*Recommender[T, U], error) {
 	return fit(trainSet, nil, false, options...)
@@ -82,9 +88,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	itemIds := make([]U, 0)
 	rated := make(map[int]map[int]bool, 0)
 
-	rowInds := []int{}
-	colInds := []int{}
-	values := []float32{}
+	trainInds := []ratingRow{}
 
 	cui := [][]sparseRow{}
 	ciu := [][]sparseRow{}
@@ -94,10 +98,10 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	}
 
 	if !implicit {
-		rowInds = slices.Grow(rowInds, trainSet.Len())
-		colInds = slices.Grow(colInds, trainSet.Len())
-		values = slices.Grow(values, trainSet.Len())
+		trainInds = slices.Grow(trainInds, trainSet.Len())
 	}
+
+	var sum float32 = 0.0
 
 	for _, rating := range trainSet.data {
 		u, ok := userMap[rating.userId]
@@ -128,9 +132,8 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 			cui[u] = append(cui[u], sparseRow{index: i, confidence: confidence})
 			ciu[i] = append(ciu[i], sparseRow{index: u, confidence: confidence})
 		} else {
-			rowInds = append(rowInds, u)
-			colInds = append(colInds, i)
-			values = append(values, rating.value)
+			trainInds = append(trainInds, ratingRow{u: u, i: i, r: rating.value})
+			sum += rating.value
 		}
 
 		rated[u][i] = true
@@ -143,11 +146,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	if implicit {
 		globalMean = 0.0
 	} else {
-		var sum float32 = 0.0
-		for i := 0; i < len(values); i++ {
-			sum += values[i]
-		}
-		globalMean = sum / float32(len(values))
+		globalMean = sum / float32(len(trainInds))
 	}
 
 	var endRange float32
@@ -230,18 +229,17 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 			var trainLoss float32 = 0.0
 
 			rand.Shuffle(trainSet.Len(), func(i, j int) {
-				rowInds[i], rowInds[j] = rowInds[j], rowInds[i]
-				colInds[i], colInds[j] = colInds[j], colInds[i]
-				values[i], values[j] = values[j], values[i]
+				trainInds[i], trainInds[j] = trainInds[j], trainInds[i]
 			})
 
 			for j := range trainSet.Len() {
-				u := rowInds[j]
-				v := colInds[j]
+				row := trainInds[j]
+				u := row.u
+				v := row.i
 
 				pu := userFactors.Row(u)
 				qv := itemFactors.Row(v)
-				e := values[j] - dot(pu, qv)
+				e := row.r - dot(pu, qv)
 
 				// slow learner
 				var gHat float32 = 0.0
