@@ -330,16 +330,18 @@ func (r *Recommender[T, U]) UserRecs(userId T, count int) []Rec[U] {
 	sort.Slice(predictions, func(j, k int) bool {
 		return predictions[j].Score > predictions[k].Score
 	})
-	predictions = first(predictions, count+len(rated))
 
-	recs := make([]Rec[U], 0, count+len(rated))
+	recs := make([]Rec[U], 0, count)
 	for _, prediction := range predictions {
 		_, ok := rated[prediction.Id]
 		if !ok {
 			recs = append(recs, Rec[U]{Id: r.itemIds[prediction.Id], Score: prediction.Score})
+			if len(recs) == count {
+				break
+			}
 		}
 	}
-	return first(recs, count)
+	return recs
 }
 
 // Returns recommendations for an item.
@@ -508,15 +510,17 @@ func similar[T Id](idMap map[T]int, ids []T, factors *matrix, norms []float32, i
 	sort.Slice(predictions, func(j, k int) bool {
 		return predictions[j].Score > predictions[k].Score
 	})
-	predictions = first(predictions, count+1)
 
-	recs := make([]Rec[T], 0, count+1)
+	recs := make([]Rec[T], 0, count)
 	for _, prediction := range predictions {
 		if prediction.Id != i {
 			recs = append(recs, Rec[T]{Id: ids[prediction.Id], Score: prediction.Score})
+			if len(recs) == count {
+				break
+			}
 		}
 	}
-	return first(recs, count)
+	return recs
 }
 
 func dot(a []float32, b []float32) float32 {
@@ -541,11 +545,4 @@ func neg(x []float32) {
 
 func sqrt(x float32) float32 {
 	return float32(math.Sqrt(float64(x)))
-}
-
-func first[T any](s []T, n int) []T {
-	if n > len(s) {
-		return s
-	}
-	return s[:n]
 }
