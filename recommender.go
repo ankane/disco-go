@@ -80,7 +80,10 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	for _, opt := range options {
 		opt(config)
 	}
-	factors := config.factors
+
+	if trainSet.Len() == 0 {
+		return nil, errors.New("No training data")
+	}
 
 	userMap := make(map[T]int, 0)
 	itemMap := make(map[U]int, 0)
@@ -88,15 +91,10 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	itemIds := make([]U, 0)
 	rated := make(map[int]map[int]bool, 0)
 
-	trainInds := []ratingRow{}
-
 	cui := [][]sparseRow{}
 	ciu := [][]sparseRow{}
 
-	if trainSet.Len() == 0 {
-		return nil, errors.New("No training data")
-	}
-
+	trainInds := []ratingRow{}
 	if !implicit {
 		trainInds = slices.Grow(trainInds, trainSet.Len())
 	}
@@ -139,9 +137,6 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		rated[u][i] = true
 	}
 
-	users := len(userMap)
-	items := len(itemMap)
-
 	var globalMean float32
 	if implicit {
 		globalMean = 0.0
@@ -149,14 +144,17 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		globalMean = sum / float32(len(trainInds))
 	}
 
+	users := len(userMap)
+	items := len(itemMap)
+	factors := config.factors
+	rng := rand.New(rand.NewPCG(uint64(config.seed), 0))
+
 	var endRange float32
 	if implicit {
 		endRange = 0.01
 	} else {
 		endRange = 0.1
 	}
-
-	rng := rand.New(rand.NewPCG(uint64(config.seed), 0))
 
 	userFactors := createFactors(users, factors, rng, endRange)
 	itemFactors := createFactors(items, factors, rng, endRange)
