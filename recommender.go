@@ -19,7 +19,7 @@ type Recommender[T Id, U Id] struct {
 	itemMap     map[U]int
 	userIds     []T
 	itemIds     []U
-	rated       map[int]map[int]bool
+	rated       []map[int]bool
 	globalMean  float32
 	userFactors *matrix
 	itemFactors *matrix
@@ -83,7 +83,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	itemMap := make(map[U]int, 0)
 	userIds := make([]T, 0)
 	itemIds := make([]U, 0)
-	rated := make(map[int]map[int]bool, 0)
+	rated := make([]map[int]bool, 0)
 
 	rowInds := []int{}
 	colInds := []int{}
@@ -104,7 +104,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 			u = len(userMap)
 			userMap[rating.userId] = u
 			userIds = append(userIds, rating.userId)
-			rated[u] = make(map[int]bool, 0)
+			rated = append(rated, make(map[int]bool, 0))
 		}
 
 		i, ok := itemMap[rating.itemId]
