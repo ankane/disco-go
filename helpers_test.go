@@ -35,19 +35,15 @@ func assertNil[T any](t *testing.T, act T) {
 }
 
 func assertContains[T comparable](t *testing.T, haystack []T, needle T) {
-	if !contains(haystack, needle) {
+	if !slices.Contains(haystack, needle) {
 		t.Errorf("Failed")
 	}
 }
 
 func assertNotContains[T comparable](t *testing.T, haystack []T, needle T) {
-	if contains(haystack, needle) {
+	if slices.Contains(haystack, needle) {
 		t.Errorf("Failed")
 	}
-}
-
-func contains[T comparable](haystack []T, needle T) bool {
-	return slices.Contains(haystack, needle)
 }
 
 func assertError(t *testing.T, err error, message string) {
