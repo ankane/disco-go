@@ -35,7 +35,7 @@ func (m *matrix) Norms() []float32 {
 	for i := 0; i < m.rows; i++ {
 		row := m.Row(i)
 		var norm float32 = 0.0
-		for j := 0; j < len(row); j++ {
+		for j := range row {
 			norm += row[j] * row[j]
 		}
 		norm = sqrt(norm)

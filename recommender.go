@@ -210,14 +210,14 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 
 		gSlow := make([]float32, users)
 		gFast := make([]float32, users)
-		for i := 0; i < users; i++ {
+		for i := range users {
 			gSlow[i] = 1.0
 			gFast[i] = 1.0
 		}
 
 		hSlow := make([]float32, items)
 		hFast := make([]float32, items)
-		for i := 0; i < items; i++ {
+		for i := range items {
 			hSlow[i] = 1.0
 			hFast[i] = 1.0
 		}
@@ -246,7 +246,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 				nu := learningRate / sqrt(gSlow[u])
 				nv := learningRate / sqrt(hSlow[v])
 
-				for d := 0; d < ks; d++ {
+				for d := range ks {
 					gud := -e*qv[d] + lambda*pu[d]
 					hvd := -e*pu[d] + lambda*qv[d]
 
@@ -420,8 +420,8 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 	// calculate YtY
 	factors := y.cols
 	yty := newMatrix(factors, factors)
-	for i := 0; i < factors; i++ {
-		for j := 0; j < factors; j++ {
+	for i := range factors {
+		for j := range factors {
 			var sum float32 = 0.0
 			for k := 0; k < y.rows; k++ {
 				sum += y.data[k*factors+i] * y.data[k*factors+j]
@@ -429,7 +429,7 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 			yty.data[i*factors+j] = sum
 		}
 	}
-	for i := 0; i < factors; i++ {
+	for i := range factors {
 		yty.data[i*factors+i] += regularization
 	}
 
@@ -450,7 +450,7 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 		copy(p, r)
 		rsold := dot(r, r)
 
-		for j := 0; j < cgSteps; j++ {
+		for range cgSteps {
 			// calculate Ap = YtCuYp - without actually calculating YtCuY
 			ap := yty.Dot(p)
 			for _, row := range rowVec {
@@ -470,7 +470,7 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 			}
 
 			rs := rsnew / rsold
-			for i := 0; i < len(p); i++ {
+			for i := range p {
 				p[i] = r[i] + rs*p[i]
 			}
 			rsold = rsnew
@@ -521,20 +521,20 @@ func similar[T Id](idMap map[T]int, ids []T, factors *matrix, norms []float32, i
 
 func dot(a []float32, b []float32) float32 {
 	var d float32 = 0.0
-	for i := 0; i < len(a); i++ {
+	for i := range a {
 		d += a[i] * b[i]
 	}
 	return d
 }
 
 func scaledAdd(x []float32, a float32, v []float32) {
-	for i := 0; i < len(x); i++ {
+	for i := range x {
 		x[i] += a * v[i]
 	}
 }
 
 func neg(x []float32) {
-	for i := 0; i < len(x); i++ {
+	for i := range x {
 		x[i] = -x[i]
 	}
 }

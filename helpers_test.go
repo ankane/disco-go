@@ -3,6 +3,7 @@ package disco_test
 import (
 	"math"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/ankane/disco-go"
@@ -46,12 +47,7 @@ func assertNotContains[T comparable](t *testing.T, haystack []T, needle T) {
 }
 
 func contains[T comparable](haystack []T, needle T) bool {
-	for _, v := range haystack {
-		if v == needle {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(haystack, needle)
 }
 
 func assertError(t *testing.T, err error, message string) {
