@@ -107,6 +107,7 @@ func downloadFile(filename string, url string, fileHash string) (string, error) 
 		return "", err
 	}
 	defer resp.Body.Close()
+
 	contents, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
