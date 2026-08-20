@@ -496,8 +496,8 @@ func similar[T Id](idMap map[T]int, ids []T, factors *denseMatrix, norms []float
 
 func dot(a []float32, b []float32) float32 {
 	var d float32 = 0.0
-	for i := range a {
-		d += a[i] * b[i]
+	for i, ai := range a {
+		d += ai * b[i]
 	}
 	return d
 }
