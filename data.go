@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -18,7 +17,13 @@ import (
 func LoadMovieLens() (*Dataset[int, string], error) {
 	data := NewDataset[int, string]()
 
+	root, err := cacheDir()
+	if err != nil {
+		return data, err
+	}
+
 	itemPath, err := downloadFile(
+		root,
 		"ml-100k/u.item",
 		"https://files.grouplens.org/datasets/movielens/ml-100k/u.item",
 		"553841ebc7de3a0fd0d6b62a204ea30c1e651aacfb2814c7a6584ac52f2c5701",
@@ -28,6 +33,7 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 	}
 
 	dataPath, err := downloadFile(
+		root,
 		"ml-100k/u.data",
 		"https://files.grouplens.org/datasets/movielens/ml-100k/u.data",
 		"06416e597f82b7342361e41163890c81036900f418ad91315590814211dca490",
@@ -36,7 +42,7 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 		return data, err
 	}
 
-	itemFile, err := os.Open(itemPath)
+	itemFile, err := root.Open(itemPath)
 	if err != nil {
 		return data, err
 	}
@@ -51,7 +57,7 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 		movies[row0] = convertToUtf8(row1)
 	}
 
-	dataFile, err := os.Open(dataPath)
+	dataFile, err := root.Open(dataPath)
 	if err != nil {
 		return data, err
 	}
@@ -81,21 +87,36 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 	return data, nil
 }
 
-func downloadFile(filename string, url string, fileHash string) (string, error) {
+func cacheDir() (*os.Root, error) {
 	home, err := os.UserCacheDir()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	dest := path.Join(home, "disco", filename)
-	_, err = os.Stat(dest)
+	homeRoot, err := os.OpenRoot(home)
+	if err != nil {
+		return nil, err
+	}
+
+	err = homeRoot.MkdirAll("disco", 0755)
+	if err != nil {
+		return nil, err
+	}
+
+	return homeRoot.OpenRoot("disco")
+}
+
+func downloadFile(root *os.Root, filename string, url string, fileHash string) (string, error) {
+	dest := filename
+
+	_, err := root.Stat(dest)
 	if err == nil {
 		return dest, nil
 	}
 
-	_, err = os.Stat(filepath.Dir(dest))
+	_, err = root.Stat(filepath.Dir(dest))
 	if err != nil {
-		err = os.MkdirAll(filepath.Dir(dest), 0755)
+		err = root.MkdirAll(filepath.Dir(dest), 0755)
 		if err != nil {
 			return "", err
 		}
@@ -119,7 +140,7 @@ func downloadFile(filename string, url string, fileHash string) (string, error) 
 		return "", fmt.Errorf("Bad checksum: %s", checksum)
 	}
 
-	f, err := os.Create(dest)
+	f, err := root.Create(dest)
 	if err != nil {
 		return "", err
 	}
