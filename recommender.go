@@ -69,7 +69,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		iterations:   20,
 		learningRate: 0.1,
 		alpha:        40.0,
-		seed:         rand.Int64(),
+		seed:         rand.Uint64(),
 	}
 	for _, opt := range options {
 		opt(config)
@@ -146,7 +146,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	users := len(userMap)
 	items := len(itemMap)
 	factors := config.factors
-	rng := rand.New(rand.NewPCG(uint64(config.seed), 0))
+	rng := rand.New(rand.NewPCG(config.seed, 0))
 
 	var endRange float32
 	if implicit {

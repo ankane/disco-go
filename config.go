@@ -10,7 +10,7 @@ type config struct {
 	learningRate   float32
 	alpha          float32
 	callback       func(info FitInfo)
-	seed           int64
+	seed           uint64
 }
 
 // Sets the number of factors.
@@ -56,7 +56,7 @@ func Callback(callback func(info FitInfo)) Option {
 }
 
 // Sets the random seed.
-func Seed(seed int64) Option {
+func Seed(seed uint64) Option {
 	return func(c *config) {
 		c.seed = seed
 	}
