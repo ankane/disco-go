@@ -36,28 +36,30 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 		return data, err
 	}
 
-	file, err := os.Open(itemPath)
+	itemFile, err := os.Open(itemPath)
 	if err != nil {
 		return data, err
 	}
+	defer itemFile.Close()
 
 	movies := make(map[string]string, 1682)
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(itemFile)
 	for scanner.Scan() {
 		row0, rest, _ := strings.Cut(scanner.Text(), "|")
 		row1, _, _ := strings.Cut(rest, "|")
 		movies[row0] = convertToUtf8(row1)
 	}
 
-	file, err = os.Open(dataPath)
+	dataFile, err := os.Open(dataPath)
 	if err != nil {
 		return data, err
 	}
+	defer dataFile.Close()
 
 	data.Grow(100000)
 
-	scanner = bufio.NewScanner(file)
+	scanner = bufio.NewScanner(dataFile)
 	for scanner.Scan() {
 		row0, rest, _ := strings.Cut(scanner.Text(), "\t")
 		row1, rest, _ := strings.Cut(rest, "\t")
