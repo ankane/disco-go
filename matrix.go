@@ -24,12 +24,7 @@ func (m *denseMatrix) Row(row int) []float32 {
 func (m *denseMatrix) Dot(x []float32) []float32 {
 	res := make([]float32, m.rows)
 	for i := 0; i < m.rows; i++ {
-		var sum float32 = 0.0
-		row := m.Row(i)
-		for j := 0; j < m.cols; j++ {
-			sum += row[j] * x[j]
-		}
-		res[i] = sum
+		res[i] = dot(m.Row(i), x)
 	}
 	return res
 }
@@ -39,11 +34,7 @@ func (m *denseMatrix) Norms() []float32 {
 
 	for i := 0; i < m.rows; i++ {
 		row := m.Row(i)
-		var norm float32 = 0.0
-		for j := range row {
-			norm += row[j] * row[j]
-		}
-		norm = sqrt(norm)
+		norm := sqrt(dot(row, row))
 		res = append(res, norm)
 	}
 
