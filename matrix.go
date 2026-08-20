@@ -22,23 +22,20 @@ func (m *denseMatrix) Row(row int) []float32 {
 }
 
 func (m *denseMatrix) Dot(x []float32) []float32 {
-	res := make([]float32, m.rows)
+	res := make([]float32, 0, m.rows)
 	for i := 0; i < m.rows; i++ {
-		res[i] = dot(m.Row(i), x)
+		res = append(res, dot(m.Row(i), x))
 	}
 	return res
 }
 
 func (m *denseMatrix) Norms() []float32 {
-	res := make([]float32, 0, m.rows)
-
+	norms := make([]float32, 0, m.rows)
 	for i := 0; i < m.rows; i++ {
 		row := m.Row(i)
-		norm := sqrt(dot(row, row))
-		res = append(res, norm)
+		norms = append(norms, sqrt(dot(row, row)))
 	}
-
-	return res
+	return norms
 }
 
 type cooMatrix struct {
