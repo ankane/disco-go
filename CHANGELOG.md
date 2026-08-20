@@ -1,6 +1,7 @@
 ## 0.3.0 (unreleased)
 
 - Changed dataset directory to use `UserCacheDir`
+- Dropped support for Go < 1.26
 
 ## 0.2.0 (2025-05-20)
 
