@@ -4,7 +4,6 @@ import (
 	"errors"
 	"math"
 	"math/rand/v2"
-	"slices"
 	"sort"
 )
 
@@ -21,8 +20,8 @@ type Recommender[T Id, U Id] struct {
 	itemIds     []U
 	rated       []map[int]bool
 	globalMean  float32
-	userFactors *matrix
-	itemFactors *matrix
+	userFactors *denseMatrix
+	itemFactors *denseMatrix
 	userNorms   []float32
 	itemNorms   []float32
 }
@@ -41,11 +40,6 @@ type FitInfo struct {
 	TrainLoss float32
 	// The validation loss.
 	ValidLoss float32
-}
-
-type sparseRow struct {
-	index      int
-	confidence float32
 }
 
 // Creates a recommender with explicit feedback.
@@ -85,18 +79,14 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	itemIds := make([]U, 0)
 	rated := make([]map[int]bool, 0)
 
-	rowInds := []int{}
-	colInds := []int{}
-	values := []float32{}
+	trainData := newCooMatrix()
 	var sum float32 = 0.0
 	if !implicit {
-		rowInds = slices.Grow(rowInds, trainSet.Len())
-		colInds = slices.Grow(colInds, trainSet.Len())
-		values = slices.Grow(values, trainSet.Len())
+		trainData.Grow(trainSet.Len())
 	}
 
-	cui := [][]sparseRow{}
-	ciu := [][]sparseRow{}
+	cui := newLilMatrix()
+	ciu := newLilMatrix()
 
 	for _, rating := range trainSet.data {
 		u, ok := userMap[rating.userId]
@@ -115,21 +105,11 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		}
 
 		if implicit {
-			if u == len(cui) {
-				cui = append(cui, []sparseRow{})
-			}
-
-			if i == len(ciu) {
-				ciu = append(ciu, []sparseRow{})
-			}
-
 			confidence := 1.0 + config.alpha*rating.value
-			cui[u] = append(cui[u], sparseRow{index: i, confidence: confidence})
-			ciu[i] = append(ciu[i], sparseRow{index: u, confidence: confidence})
+			cui.Push(u, i, confidence)
+			ciu.Push(i, u, confidence)
 		} else {
-			rowInds = append(rowInds, u)
-			colInds = append(colInds, i)
-			values = append(values, rating.value)
+			trainData.Push(u, i, rating.value)
 			sum += rating.value
 		}
 
@@ -140,7 +120,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 	if implicit {
 		globalMean = 0.0
 	} else {
-		globalMean = sum / float32(len(values))
+		globalMean = sum / float32(trainData.Len())
 	}
 
 	users := len(userMap)
@@ -225,19 +205,14 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 		for iteration := 0; iteration < config.iterations; iteration++ {
 			var trainLoss float32 = 0.0
 
-			rng.Shuffle(trainSet.Len(), func(i, j int) {
-				rowInds[i], rowInds[j] = rowInds[j], rowInds[i]
-				colInds[i], colInds[j] = colInds[j], colInds[i]
-				values[i], values[j] = values[j], values[i]
-			})
+			trainData.Shuffle(rng)
 
-			for j := range trainSet.Len() {
-				u := rowInds[j]
-				v := colInds[j]
+			for j := range trainData.Len() {
+				u, v, value := trainData.Get(j)
 
 				pu := userFactors.Row(u)
 				qv := itemFactors.Row(v)
-				e := values[j] - dot(pu, qv)
+				e := value - dot(pu, qv)
 
 				// slow learner
 				var gHat float32 = 0.0
@@ -288,7 +263,7 @@ func fit[T Id, U Id](trainSet *Dataset[T, U], validSet *Dataset[T, U], implicit 
 			}
 
 			if config.callback != nil {
-				trainLoss = sqrt(trainLoss / float32(trainSet.Len()))
+				trainLoss = sqrt(trainLoss / float32(trainData.Len()))
 
 				var validLoss float32
 				if validSet != nil {
@@ -414,12 +389,12 @@ func (r *Recommender[T, U]) Rmse(data *Dataset[T, U]) float32 {
 	return sqrt(sum / float32(len(data.data)))
 }
 
-func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization float32) {
+func leastSquaresCg(cui *lilMatrix, x *denseMatrix, y *denseMatrix, regularization float32) {
 	cgSteps := 3
 
 	// calculate YtY
 	factors := y.cols
-	yty := newMatrix(factors, factors)
+	yty := newDenseMatrix(factors, factors)
 	for i := range factors {
 		for j := range factors {
 			var sum float32 = 0.0
@@ -433,7 +408,7 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 		yty.data[i*factors+i] += regularization
 	}
 
-	for u, rowVec := range cui {
+	for u, rowVec := range cui.rowList {
 		// start from previous iteration
 		xi := x.Row(u)
 
@@ -442,7 +417,7 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 		neg(r)
 		for _, row := range rowVec {
 			i := row.index
-			var confidence float32 = row.confidence
+			confidence := row.value
 			scaledAdd(r, confidence-(confidence-1.0)*dot(y.Row(i), xi), y.Row(i))
 		}
 
@@ -455,7 +430,7 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 			ap := yty.Dot(p)
 			for _, row := range rowVec {
 				i := row.index
-				var confidence float32 = row.confidence
+				confidence := row.value
 				scaledAdd(ap, (confidence-1.0)*dot(y.Row(i), p), y.Row(i))
 			}
 
@@ -478,15 +453,15 @@ func leastSquaresCg(cui [][]sparseRow, x *matrix, y *matrix, regularization floa
 	}
 }
 
-func createFactors(rows int, cols int, rng *rand.Rand, endRange float32) *matrix {
-	m := newMatrix(rows, cols)
+func createFactors(rows int, cols int, rng *rand.Rand, endRange float32) *denseMatrix {
+	m := newDenseMatrix(rows, cols)
 	for i := 0; i < rows*cols; i++ {
 		m.data[i] = rng.Float32() * endRange
 	}
 	return m
 }
 
-func similar[T Id](idMap map[T]int, ids []T, factors *matrix, norms []float32, id T, count int) []Rec[T] {
+func similar[T Id](idMap map[T]int, ids []T, factors *denseMatrix, norms []float32, id T, count int) []Rec[T] {
 	i, ok := idMap[id]
 	if !ok {
 		return []Rec[T]{}
