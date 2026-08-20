@@ -1,3 +1,7 @@
+## 0.3.0 (unreleased)
+
+- Changed dataset directory to use `UserCacheDir`
+
 ## 0.2.0 (2025-05-20)
 
 - Added `Grow` method to `Dataset`

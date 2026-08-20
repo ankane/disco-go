@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -81,13 +80,13 @@ func LoadMovieLens() (*Dataset[int, string], error) {
 }
 
 func downloadFile(filename string, url string, fileHash string) (string, error) {
-	home := os.Getenv("HOME")
-	if home == "" {
-		return "", errors.New("No HOME")
+	home, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
 	}
 
-	dest := path.Join(home, ".disco", filename)
-	_, err := os.Stat(dest)
+	dest := path.Join(home, "disco", filename)
+	_, err = os.Stat(dest)
 	if err == nil {
 		return dest, nil
 	}
