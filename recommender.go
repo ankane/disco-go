@@ -455,7 +455,7 @@ func leastSquaresCg(cui *lilMatrix, x *denseMatrix, y *denseMatrix, regularizati
 
 func createFactors(rows int, cols int, rng *rand.Rand, endRange float32) *denseMatrix {
 	m := newDenseMatrix(rows, cols)
-	for i := 0; i < rows*cols; i++ {
+	for i := range m.data {
 		m.data[i] = rng.Float32() * endRange
 	}
 	return m
