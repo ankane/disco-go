@@ -9,7 +9,11 @@ import (
 func dot(a []float32, b []float32) float32 {
 	var dist archsimd.Float32x4
 
-	for len(a) >= 4 && len(b) >= 4 {
+	if len(b) != len(a) {
+		panic("")
+	}
+
+	for len(a) >= 4 {
 		axs := archsimd.LoadFloat32x4(a[:4])
 		bxs := archsimd.LoadFloat32x4(b[:4])
 		dist = axs.MulAdd(bxs, dist)
