@@ -1,5 +1,6 @@
 ## 0.3.0 (unreleased)
 
+- Added experimental support for SIMD
 - Changed dataset directory to use `UserCacheDir`
 - Changed `seed` from `int64` to `uint64`
 - Dropped support for Go < 1.26
