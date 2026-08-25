@@ -1,6 +1,7 @@
 package disco
 
 import (
+	"iter"
 	"math/rand/v2"
 	"slices"
 )
@@ -16,6 +17,10 @@ func newDenseMatrix(rows int, cols int) *denseMatrix {
 	return &denseMatrix{rows: rows, cols: cols, data: data}
 }
 
+func (m *denseMatrix) Rows() iter.Seq[[]float32] {
+	return slices.Chunk(m.data, m.cols)
+}
+
 func (m *denseMatrix) Row(row int) []float32 {
 	start := row * m.cols
 	return m.data[start : start+m.cols]
@@ -23,7 +28,7 @@ func (m *denseMatrix) Row(row int) []float32 {
 
 func (m *denseMatrix) Dot(x []float32) []float32 {
 	res := make([]float32, 0, m.rows)
-	for row := range slices.Chunk(m.data, m.cols) {
+	for row := range m.Rows() {
 		res = append(res, dot(row, x))
 	}
 	return res
@@ -31,7 +36,7 @@ func (m *denseMatrix) Dot(x []float32) []float32 {
 
 func (m *denseMatrix) Norms() []float32 {
 	norms := make([]float32, 0, m.rows)
-	for row := range slices.Chunk(m.data, m.cols) {
+	for row := range m.Rows() {
 		norms = append(norms, sqrt(dot(row, row)))
 	}
 	return norms

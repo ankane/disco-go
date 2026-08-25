@@ -4,7 +4,6 @@ import (
 	"errors"
 	"math"
 	"math/rand/v2"
-	"slices"
 	"sort"
 )
 
@@ -399,7 +398,7 @@ func leastSquaresCg(cui *lilMatrix, x *denseMatrix, y *denseMatrix, regularizati
 	for i := range factors {
 		for j := range factors {
 			var sum float32 = 0.0
-			for row := range slices.Chunk(y.data, y.cols) {
+			for row := range y.Rows() {
 				sum += row[i] * row[j]
 			}
 			yty.data[i*factors+j] = sum
