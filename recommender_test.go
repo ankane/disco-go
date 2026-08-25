@@ -197,7 +197,7 @@ func TestNoTrainingData(t *testing.T) {
 
 func BenchmarkDot(b *testing.B) {
 	data, _ := disco.LoadMovieLens()
-	recommender, _ := disco.FitExplicit(data, disco.Factors(20))
+	recommender, _ := disco.FitExplicit(data, disco.Factors(100))
 	userId := recommender.UserIds()[0]
 
 	for b.Loop() {
