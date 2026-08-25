@@ -23,16 +23,15 @@ func (m *denseMatrix) Row(row int) []float32 {
 
 func (m *denseMatrix) Dot(x []float32) []float32 {
 	res := make([]float32, 0, m.rows)
-	for i := 0; i < m.rows; i++ {
-		res = append(res, dot(m.Row(i), x))
+	for row := range slices.Chunk(m.data, m.cols) {
+		res = append(res, dot(row, x))
 	}
 	return res
 }
 
 func (m *denseMatrix) Norms() []float32 {
 	norms := make([]float32, 0, m.rows)
-	for i := 0; i < m.rows; i++ {
-		row := m.Row(i)
+	for row := range slices.Chunk(m.data, m.cols) {
 		norms = append(norms, sqrt(dot(row, row)))
 	}
 	return norms
