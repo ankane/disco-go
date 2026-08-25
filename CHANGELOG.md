@@ -1,4 +1,4 @@
-## 0.3.0 (unreleased)
+## 0.3.0 (2026-08-25)
 
 - Changed dataset directory to use `UserCacheDir`
 - Changed `seed` from `int64` to `uint64`
