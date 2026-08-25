@@ -194,13 +194,3 @@ func TestNoTrainingData(t *testing.T) {
 	_, err := disco.FitExplicit(data)
 	assertError(t, err, "No training data")
 }
-
-func BenchmarkDot(b *testing.B) {
-	data, _ := disco.LoadMovieLens()
-	recommender, _ := disco.FitExplicit(data, disco.Factors(100))
-	userId := recommender.UserIds()[0]
-
-	for b.Loop() {
-		_ = recommender.UserRecs(userId, 5)
-	}
-}
