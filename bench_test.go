@@ -6,7 +6,7 @@ import (
 
 func BenchmarkDot(b *testing.B) {
 	a := make([]float32, 20)
-	c := make([]float32, 20)
+	c := make([]float32, len(a))
 
 	for i := range a {
 		a[i] = float32(i)
